@@ -1,0 +1,62 @@
+Perfect Numbers
+---------------
+
+Q1. Roughly how long did it take your computer to do the search? How many perfect numbers were found and what were they?
+A1. It took roughly ~0.40 seconds to do the search. 4 perfect numbers were found: 6, 28, 496, and 8128.
+
+Q2. Make a table of the timing results for `findPerfects` that you observed. (old-school table of text rows and columns is just fine)
+A2. Timing Results Table:
+trial   stop    time (s)
+1       4000    0.018
+2       8000    0.038
+3       16000   0.115
+4       32000   0.409
+5       384000  56.785
+
+Q3. Does it take the same amount of work to compute `isPerfect` on the number 10 as it does on the number 1000? Why or why not? Does it take the same amount of work for `findPerfects` to search the range of numbers from 1-1000 as it does to search the numbers from 1000-2000? Why or why not?
+A3. No. `divisorSum(n)` loops over every number from 1 to n-1, so the work grows with n. `isPerfect(10)` runs the loop 9 times, while `isPerfect(1000)` runs it 999 times, about 100x more work. Searching 1000-2000 also takes more work than searching 1-1000, even though both ranges have 1000 numbers. Every number in the second range is bigger, so each `divisorSum` call loops more times. Adding up the loop counts, 1-1000 takes about 500,000 steps and 1000-2000 takes about 1,500,000, so the second range is roughly 3x the work.
+
+Q4. Extrapolate from the data you gathered and make a prediction: how long will it take `findPerfects` to reach the fifth perfect number?
+A4. The fifth perfect number is 33,550,336, which is about 87.4x my largest trial size (384,000, which took 56.785 seconds). Since the time grows quadratically, the time should grow by about 87.4^2 = 7,634x. 56.785 * 7,634 is about 433,500 seconds.
+
+Q5. Do any of the tests still pass even with this broken function? Why or why not?
+A5. The student test I created to test negative values passed to isPerfect all still pass. This is because the divisorSum for loop only iterates when divisor < n, and since n is negative and divisor starts at 1, it never iterates. So it just returns total, which is set to 1, which would never be equal to the originally passed negative value.
+
+Q6. Explain your testing strategy for `smarterSum` and how you chose your specific test cases that lead you to be confident the function is working correctly.
+A6. Since `divisorSum` is already known to be correct, each test checks that `smarterSum(n)` equals `divisorSum(n)`. I picked values of n that hit the tricky spots of the square-root loop:
+- n = 1 and n = 0: 1's divisor partner is n itself, which must not be counted. This test caught a real bug: my first version returned 1 for n = 1, so `isPerfectSmarter(1)` wrongly said 1 was perfect.
+- n = -100: negative input should give 0, the same as `divisorSum`.
+- n = 25 and n = 36: perfect squares, where the square root is paired with itself. This checks that it is counted only once and that the loop's stopping point is not off by one.
+- n = 13: a prime, whose only proper divisor is 1.
+- n = 28: a perfect number.
+- n = 1000: a larger, ordinary number with many divisor pairs.
+
+Q7. Record your timing results for `findPerfectsSmarter` into a table.
+A7. Timing Results Table:
+trial   stop        time (s)
+1       4000        0.015
+2       8000        0.017
+3       16000       0.024
+4       32000       0.032
+5       8580000    55.489
+
+Q8. Make a prediction: how long will `findPerfectsSmarter` take to reach the fifth perfect number?
+A8. 33,550,336 is about 3.91x my largest trial size (8,580,000, which took 55.489 seconds). This version grows at about N^1.5, so the time should grow by about 3.91^1.5 = 7.73x. 55.489 * 7.73 is about 429 seconds.
+
+Q9. Explain how you chose your specific test cases and why they lead you to be confident `findNthPerfectEuclid` is working correctly.
+A9. The main tests compare the result for n = 1 through 5 against the known list of perfect numbers (6, 28, 496, 8128, 33550336). Exact values matter: checking only that the result is perfect would still pass if the function returned the wrong one (for example, the 2nd perfect number when asked for the 1st). The n = 1 test also checks that k = 1 is handled correctly, since 2^1 - 1 = 1 is not prime and must be skipped. Finally, one test passes the results through `isPerfect` and `isPerfectSmarter`, an independent check that doesn't rely on my copy of the known values.
+
+Soundex
+-------
+
+Q10. What is the Soundex code for "Angelou"? What is the code for your own surname?
+A10. The Soundex code for "Angelou" is A524. For Chowdhury, my surname, it is C360.
+
+Q11. Before writing any code, brainstorm your plan of attack and sketch how you might decompose the work into smaller tasks. Briefly describe your decomposition strategy.
+A11. First, I will initialize an array (vector) with each digit corresponding to the index of the letter in the alphabet. So A (1st letter) is 0, so first item in the array would be 0. Then, I'll initialize my answer string with the first uppercase char from the surname string. Then, I'll do a for loop where I iterate every char in the surname string and use the array to index the corresponding digit, and add any non-zero digits to my answer until it is 4 chars long or the loop is complete. Then, if the length of the answer is less than 4, fill the rest with 0's and return it.
+
+Q12. Think about one or more examples of a class of names that the Soundex system might not work well for. Explain what this class of names is and why the system might incorrectly group them or mis-categorize one of the names.
+A12. Soundex may work poorly for short East Asian surnames. For example, Lee, Liu, and Lou all become L000 because Soundex ignores vowels after the first letter. This can create representational harm because names from certain cultural or linguistic groups may be grouped together more often or represented less accurately than names the algorithm was originally designed around. In real systems, that could lead to people being misidentified or treated as interchangeable.
+
+Q13. Suppose you are a software engineer working for the U.S. government. You have been tasked with implementing a system that collects names as part of the Census survey and analyzes these names using a phonetic algorithm. Your boss suggests using Soundex and notes that the algorithm is only expected to work for ASCII-encoded strings, since supporting Unicode would require extra work and time. What would your response be and why? What representational harms might result from building a system that exclusively uses Soundex and/or ASCII?
+A13. I would push back on using only ASCII and Soundex. ASCII can alter or exclude names that use non-English characters, while Soundex is biased toward English pronunciation patterns. This could create representational harm by making some cultural groups more likely to have their names misrecorded or incorrectly grouped.
