@@ -1,0 +1,158 @@
+Rayed Chowdhury, Jun Jang
+
+Warmup
+------
+
+Q1. How are the contents labeled when the Stack contains only one element?
+A1. The single element is labeled "top" (there is no separate bottom entry).
+
+Q2. For which inputs does duplicateNegatives enter an infinite loop?
+A2. Any queue containing at least one negative number. The original loop
+checks i against q.size(), but q.size() grows each time a negative number is
+duplicated. That negative also rotates back through the queue and eventually
+gets processed again, continually extending the loop.
+
+Q3. Show the corrected duplicateNegatives code.
+A3.
+void duplicateNegatives(Queue<int>& q) {
+    int originalSize = q.size();
+    for (int i = 0; i < originalSize; i++) {
+        int value = q.dequeue();
+        q.enqueue(value);
+        if (value < 0) {
+            q.enqueue(value);
+        }
+    }
+}
+The saved originalSize stays fixed even while the queue grows.
+
+Q4. What is the better fix for sumStack?
+A4. Initialize total to 0, then add each popped value inside a loop that runs
+while the stack is not empty. Unlike initializing total by popping the first
+element, this works for empty and nonempty stacks without a special case.
+
+Maze
+----
+
+Q5. Describe your validatePath testing strategy and confidence.
+A5. I tested a valid winding path, as well as an empty path, an incorrect
+starting cell, an incorrect ending cell, a diagonal jump, and a path that
+revisits the starting cell. I also kept the provided tests for walking through
+a wall and reading a solution file. These exercise each rule separately,
+including the tricky requirement that the entrance count as already visited.
+I am reasonably confident, though these finite tests cannot guarantee there
+are no remaining edge cases.
+
+Q6. Which paths are enqueued when expanding {r4c3}?
+A6. {r4c3, r3c3}, {r4c3, r4c4}, and {r4c3, r4c2}.
+(The three neighbors are north, east, and west; south is a wall.)
+
+Q7. What remains in the BFS queue after expanding those three paths?
+A7. {r4c3, r3c3, r2c3},
+    {r4c3, r4c4, r4c5},
+    {r4c3, r4c2, r4c1}.
+All three paths are length three. With a Set of neighbors, the exact queue
+order depends on iteration order, but the paths are the same.
+
+Q8. Which exits could cause BFS to terminate in the original maze?
+A8. E3 only. It is three moves from S, strictly closer than E1, E2, or E4,
+so BFS dequeues an E3 path first regardless of neighbor iteration order.
+All four exits are reachable from S; E3 simply wins because BFS searches in
+increasing path length.
+
+Q9. Which exits could cause BFS to terminate after E3 is removed?
+A9. E1 or E2. Each has a shortest path of five moves from S, while E4 takes
+more moves. E4 is reachable but cannot be first under BFS. Which of E1/E2 is
+first depends on how equal-length frontier paths are ordered, including the
+iteration order of valid neighbors. Using the Stanford Set may impose an
+ordering different from the order candidates were added to it.
+
+Q10. Why use Stack and Queue instead of Vector?
+A10. Stack and Queue make the intended access pattern explicit: LIFO for DFS
+and FIFO for BFS. They expose only the operations appropriate to that behavior,
+so it is harder to accidentally remove an element from the wrong end. Their
+push/pop and enqueue/dequeue operations are efficient, while using a Vector
+as a front-removing queue would require shifting elements. The restricted
+interface is useful because it enforces the algorithm's structure.
+
+Q11. Which paths are on the DFS stack after expanding S?
+A11. The paths are {r4c3, r3c3}, {r4c3, r4c2}, and {r4c3, r4c4}.
+Assuming Stanford Set iteration visits these in ascending row/column order,
+the stack is (top first):
+    TOP    {r4c3, r4c4}
+           {r4c3, r4c2}
+    BOTTOM {r4c3, r3c3}
+
+Q12. Show the DFS stack after popping and expanding its top path.
+A12. Popping {r4c3, r4c4} discovers the open cell r4c5:
+    TOP    {r4c3, r4c4, r4c5}
+           {r4c3, r4c2}
+    BOTTOM {r4c3, r3c3}
+
+Q13. Show the DFS stack after the next pop and expansion.
+A13. Popping {r4c3, r4c4, r4c5} discovers r4c6:
+    TOP    {r4c3, r4c4, r4c5, r4c6}
+           {r4c3, r4c2}
+    BOTTOM {r4c3, r3c3}
+
+Q14. Which exits could cause DFS to terminate in the original maze?
+A14. E1, E2, E3, or E4 can cause termination, since all four are reachable
+from S. Unlike BFS, DFS follows one branch deeply, so the first exit found
+need not be the closest. The exact result depends on neighbor iteration and
+push order: the last newly pushed path is examined next.
+
+Q15. Which exits could cause DFS to terminate with E3 removed?
+A15. E1, E2, or E4. These exits remain reachable, and any could be the first
+exit reached with a suitable ordering of neighbor exploration. E3 is no
+longer an exit, so this list differs from Q14 only by removing E3.
+
+Search Engine
+-------------
+
+Q16. List the inverted index from res/tiny.txt.
+A16.
+10       -> {www.dr.seuss.net}
+5lbmms   -> {www.shoppinglist.com}
+blue     -> {www.dr.seuss.net, www.rainbow.org}
+bread    -> {www.shoppinglist.com}
+eat      -> {www.bigbadwolf.com}
+fish     -> {www.bigbadwolf.com, www.dr.seuss.net, www.shoppinglist.com}
+green    -> {www.rainbow.org}
+i        -> {www.bigbadwolf.com}
+milk     -> {www.shoppinglist.com}
+one      -> {www.dr.seuss.net}
+red      -> {www.dr.seuss.net, www.rainbow.org}
+two      -> {www.dr.seuss.net}
+
+Beyond Algorithmic Analysis
+---------------------------
+
+Q17. Describe a way benchmarking could benefit the environment.
+A17. A plausible example is a delivery company's route-planning service
+recomputing routes for thousands of vehicles each day. If benchmarking showed
+that most computation time and memory writes were spent repeatedly evaluating
+nearly identical routes, engineers could cache reusable results or redesign
+the search to avoid redundant work. This could reduce server electricity use,
+and better routes might reduce vehicle mileage and fuel consumption. I would
+measure both computational resource use and actual route outcomes, then check
+whether an optimization just shifts environmental costs somewhere else.
+
+Q18. Should engineers consider wrongful denials even if not in the contract?
+A18. Yes. A contract's performance metrics do not define every consequence
+that matters. Denying eligible people welfare benefits is a severe human
+cost, and optimizing only for quickly closing cases can make that outcome
+look like success. Engineers should raise the omission with stakeholders,
+advocate for safeguards such as auditing denial accuracy, meaningful appeals,
+and human review of uncertain cases, and document the risks if leadership
+refuses. These safeguards should be incorporated in the system's requirements
+rather than silently changing its contractual behavior without discussion.
+
+Q19. How would you design and test Twitter's image cropping algorithm?
+A19. I would define success in terms of preserving important people and
+content, not only maximizing pixel contrast or engagement. Before release,
+I would test on a diverse, consented set of images and compare outcomes for
+people with different skin tones, appearances, and image compositions.
+Human reviewers and affected users should help identify bad crops that a
+single numerical score misses. I would ship gradually, audit results by
+subgroup, collect reports, and retain a fast rollback mechanism. Giving
+users control over the crop would also reduce the harm from automated mistakes.
