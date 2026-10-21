@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+
+# Qt Creator / qmake build output
+build*/
+*.app/
+*.o
+Makefile
+.qmake.stash
+.qtc_clangd/
+compile_commands.json
+
+# Qt Creator per-user settings
+.qtcreator/
+*.pro.user
+*.pro.user.*
+
+# Editor swap/backup files
+*.swp
+*~
+
+# Archives
+*.zip

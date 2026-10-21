@@ -1,0 +1,51 @@
+Before submitting this file, make sure that there are no more TODO
+placeholders remaining in the file (and remove this comment too).
+
+Warmup
+------
+
+Q1. Looking at a call stack listing in a debugger, what is the indication that the program being debugged uses recursion?
+A1. TODO
+
+Q2. Subtract the innermost level number from the outermost to get the maximum count of stack frames that fit in the capacity of the call stack. How many stack frames fit in your system's call stack?
+A2. TODO
+
+Q3. Describe how the symptoms of infinite recursion differ from the symptoms of an infinite loop.
+A3. TODO
+
+Q4. In place of selecting values over a defined range, an alternate approach would be to randomly select values for base and exponent. Such a test case would test something different each time you ran it. This test approach is part of a larger approach known as "fuzz" testing. What do you see as possible benefit and downside of randomness being used in a test case?
+A4. TODO
+
+Q5. What was the number of iterations of `recPower` did it take on your system to amount to a quarter second? Copy/paste the time results of the two time trial sequences running on that number of iterations.
+A5. TODO
+
+Q6. Explain how the recursive structure of `recPower` results in a Big-O runtime of `O(lgN)` relative to the size of its `exp` argument.
+A6. TODO
+
+
+Balanced
+--------
+
+Q7. Compare your recursive solution to the iterative approach used for the Check Balance problem in [Section 1][section1]. Which version do you find easier to read and understand? In which version did you find it easier to confirm the correct behavior?
+A7. TODO
+
+Merge
+-----
+
+Q8. Give a rough estimate of the maximum length sequence that could be successfully merged on your system assuming a recursive implementation of `binaryMerge`.
+A8. TODO
+
+Q9. What would be the observed behavior if attempting to recursively merge a sequence larger than that maximum?
+A9. TODO
+
+Q10. Include the data from your execution timing and explain how it supports your Big O prediction for `binaryMerge`.
+A10. TODO
+
+Q11. Include the data from your execution timing and explain how it supports your Big O prediction for `naiveMultiMerge`.
+A11. TODO
+
+Q12. Include the data from your execution timing and explain how it demonstrates `O(n log k)` runtime for `recMultiMerge`.
+A12. TODO
+
+Q13. You run `recMultiMerge` on a sequence of size 1 million and see that it completes just fine. Explain why this is not running afoul of the call stack capacity limitation.  _Hint_: How many stack frames (levels) are expected to be on the call stack at the deepest point in the recursion in `recMultiMerge`?
+A13. TODO
