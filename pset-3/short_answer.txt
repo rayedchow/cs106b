@@ -1,5 +1,5 @@
-Before submitting this file, make sure that there are no more TODO
-placeholders remaining in the file (and remove this comment too).
+Rayed Chowdhury and Jun Jang
+CS106B, Assignment 3
 
 Warmup
 ------
@@ -33,19 +33,73 @@ Merge
 -----
 
 Q8. Give a rough estimate of the maximum length sequence that could be successfully merged on your system assuming a recursive implementation of `binaryMerge`.
-A8. TODO
+A8. Around 100,000 elements, assuming one stack frame per element and frames
+about the same size as factorial's. The local stack limit is 8176 KiB, and the
+debug version of factorial uses 80 bytes per frame. That leaves room for about
+104,000 frames. This is just an estimate, because recursive merge could use bigger
+frames and run out of space sooner.
 
 Q9. What would be the observed behavior if attempting to recursively merge a sequence larger than that maximum?
-A9. TODO
+A9. The program would run out of stack space and crash. In the debugger,
+you'd see a long stack of recursive merge calls.
 
 Q10. Include the data from your execution timing and explain how it supports your Big O prediction for `binaryMerge`.
-A10. TODO
+A10. I'd expect O(n), where n is the total number of elements in both queues.
+We move each element into the result once. Copying the input queues is O(n) too.
+These are the times from the debug build:
+n          seconds
+500000     0.058
+1000000    0.117
+2000000    0.233
+4000000    0.459
+The time about doubles each time n doubles, which fits O(n), since it's linearly growing.
 
 Q11. Include the data from your execution timing and explain how it supports your Big O prediction for `naiveMultiMerge`.
-A11. TODO
+A11. I'd expect O(nk), where n is the total number of elements and k is the
+number of queues. We keep merging into a growing result, so we end up going
+through the same elements again and again. For queues of about the same size,
+we process n/k elements, then 2n/k, and so on up to n. That adds up to O(nk).
+These are the times;
+Keeping k = 32:
+n          seconds
+50000      0.085
+100000     0.176
+200000     0.349
+400000     0.697
+800000     1.404
+Keeping n = 200000:
+k          seconds
+8          0.097
+16         0.178
+32         0.347
+64         0.680
+128        1.339
+Doubling n while keeping k the same about doubles the time. Doubling k while
+keeping n the same does too. Both results fit O(nk).
 
 Q12. Include the data from your execution timing and explain how it demonstrates `O(n log k)` runtime for `recMultiMerge`.
-A12. TODO
+A12. The runtime is O(n log k). We split the queues in half each time, so
+there are about log2(k) levels. At each level, we merge a total of n elements.
+These are the times:
+Keeping k = 32:
+n          seconds
+50000      0.033
+100000     0.065
+200000     0.129
+400000     0.252
+800000     0.502
+Keeping n = 200000:
+k          seconds
+2          0.025
+8          0.074
+32         0.125
+128        0.179
+512        0.236
+Doubling n about doubles the time. Multiplying k by 4 adds two levels and
+about 0.05 seconds each time. That fits the n and log k parts of O(n log k).
 
 Q13. You run `recMultiMerge` on a sequence of size 1 million and see that it completes just fine. Explain why this is not running afoul of the call stack capacity limitation.  _Hint_: How many stack frames (levels) are expected to be on the call stack at the deepest point in the recursion in `recMultiMerge`?
-A13. TODO
+A13. We halve the number of queues with each recursive call, so the deepest
+stack has about ceil(log_2(k)) + 1 recMultiMerge frames. Even with one million
+queues containing one element each, that's only about 21 frames. binaryMerge
+uses a loop, so merging all those elements doesn't add recursive calls.

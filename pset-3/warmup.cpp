@@ -1,8 +1,6 @@
-/**
- * File: warmup.cpp
- * ----------------
- * This code is provided as part of an exercise to practice using a
- * debugger. This program has buggy use of recursion.
+/*
+ * Rayed Chowdhury and Jun Jang
+ * CS106B, Assignment 3
  */
 
 #include <iostream>    // for cout, endl
@@ -12,15 +10,16 @@
 using namespace std;
 
 
-/* The function factorial is a recursive implementation to calculate
- * factorials. This function works correctly for positive values
- * of n <= 12 (for larger values of n, the computed factorial will
- * overflow the range of the int data type).
- *
- * As currently written, this function does not correctly handle
- * negative inputs.
+/*
+ * Parameters: n is the integer to take the factorial of
+ * Returns: n factorial
+ * Preconditions: n is at most 12
+ * Errors: n is negative
  */
 int factorial(int n) {
+    if (n < 0) {
+        error("Factorial requires a nonnegative argument.");
+    }
     if (n == 0) {
         return 1;
     } else {
@@ -28,19 +27,23 @@ int factorial(int n) {
     }
 }
 
-/* The function iterativePower calculates base raised to the
- * power exp. The implementation use a loop and repeated multiplication.
+/*
+ * Parameters: base is the number to raise; exp is the exponent
+ * Returns: base raised to exp using a loop
+ * Preconditions: exp is nonnegative
  */
 double iterativePower(double base, int exp) {
     double result = 1;
-    for (int i = 0; i < exp; i++)
-       result *= base;
+    for (int i = 0; i < exp; i++) {
+        result *= base;
+    }
     return result;
 }
 
-/* The function recPower calculates base raised to the power exp.
- * The implementation use a recursive decomposition of the
- * exponentiation
+/*
+ * Parameters: base is the number to raise; exp is the exponent
+ * Returns: base raised to exp using recursion
+ * Preconditions: exp is nonnegative
  */
 double recPower(double base, int exp) {
     if (exp == 0) {
@@ -75,11 +78,13 @@ PROVIDED_TEST("Test recursive power against iterative power, generated inputs") 
 }
 
 
+/*
+ * Parameters: base and exp are the inputs passed to recPower
+ * Does: calls recPower repeatedly with base and exp for timing
+ * Preconditions: exp is nonnegative
+ */
 void manyPowerCalls(double base, int exp) {
-    // change the value of this constant to adjust the number of
-    // iterations until you observe time required hitting a reasonable range on
-    // your system
-    const int NUM_ITERATIONS = 1;
+    const int NUM_ITERATIONS = 24000000;
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         recPower(base, exp);
@@ -96,4 +101,11 @@ PROVIDED_TEST("Time trial recPower, keep base constant, double exp") {
     for (int size = 4; size <= 128; size *= 2) {
         TIME_OPERATION(size, manyPowerCalls(5, size));
     }
+}
+
+
+STUDENT_TEST("Factorial rejects negatives and handles zero and twelve") {
+    EXPECT_ERROR(factorial(-3));
+    EXPECT_EQUAL(factorial(0), 1);
+    EXPECT_EQUAL(factorial(12), 479001600);
 }
