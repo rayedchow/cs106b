@@ -1,8 +1,6 @@
 /*
- * TODO: remove and replace this file header comment
- * You will edit and turn in this file.
- * Remove starter comments and add your own
- * comments on each function and on complex code sections.
+ * Rayed Chowdhury and Jun Jang
+ * CS106B, Assignment 3
  */
 #include <iostream>    // for cout, endl
 #include <string>      // for string class
@@ -11,22 +9,58 @@
 
 using namespace std;
 
-/*
- * TODO: Replace this comment with a descriptive function
- * header comment.
+/* The operatorsFrom function takes a string 'str' and returns
+ * a string that contains only bracketing operator characters in
+ * their original order. If the string is empty and has no brackets,
+ * an empty string "" is returned.
  */
 string operatorsFrom(string str) {
-    /* TODO: Implement this function. */
-    return "";
+
+    string cleaned;
+
+    if (str.empty()) {
+        return "";
+    }
+
+    char first = str[0];
+
+    if (first == '(' || first == ')' || first == '[' || first == ']' || first == '{' || first == '}') {
+        cleaned += first;
+    }
+
+    cleaned += operatorsFrom(str.substr(1));
+
+    return cleaned;
 }
 
-/*
- * TODO: Replace this comment with a descriptive function
- * header comment.
+/* operatorsAreMatched function takes string 'ops,' which
+ * is made up only of bracketing operators and returns true/false
+ * if the string is balanced/unbalanced respectively. It removes
+ * adjacent pairs of bracketing operators one at a time and checks
+ * if the shorter string is balanced and goes until the string is empty,
+ * which returns true in that case. If no such pair exists in a non-empty
+ * string, the function returns false.
  */
 bool operatorsAreMatched(string ops) {
-    /* TODO: Implement this function. */
-    return false;
+    if (ops.empty()) {
+        return true;
+    }
+
+    if (stringContains(ops, "()")) {
+        int position = ops.find("()");
+        ops.erase(position, 2);
+        return operatorsAreMatched(ops);
+    } else if (stringContains(ops, "{}")) {
+        int position = ops.find("{}");
+        ops.erase(position, 2);
+        return operatorsAreMatched(ops);
+    } else if (stringContains(ops, "[]")) {
+        int position = ops.find("[]");
+        ops.erase(position, 2);
+        return operatorsAreMatched(ops);
+    } else {
+        return false;
+    }
 }
 
 /*
@@ -65,4 +99,17 @@ PROVIDED_TEST("isBalanced on non-balanced examples from writeup") {
     EXPECT(!isBalanced("( ( [ a ] )"));
     EXPECT(!isBalanced("3 ) ("));
     EXPECT(!isBalanced("{ ( x } y )"));
+}
+
+STUDENT_TEST("operatorsFrom, additional tests to verify it tests all cases") {
+    EXPECT_EQUAL(operatorsFrom(""), "");
+    EXPECT_EQUAL(operatorsFrom("a! d3?"), "");
+    EXPECT_EQUAL(operatorsFrom("a(b[c]d)e"), "([])");
+}
+
+STUDENT_TEST("operatorsAreMatched on four different cases") {
+    EXPECT(operatorsAreMatched("{[()]}"));
+    EXPECT(operatorsAreMatched("[]{}()"));
+    EXPECT(!operatorsAreMatched("(]"));
+    EXPECT(!operatorsAreMatched(")("));
 }
