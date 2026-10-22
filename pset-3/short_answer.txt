@@ -5,29 +5,46 @@ Warmup
 ------
 
 Q1. Looking at a call stack listing in a debugger, what is the indication that the program being debugged uses recursion?
-A1. TODO
+A1. An indication that the program being debugged uses recursion is if the same function name appears more than once in the call stack. That's a sign because it indicates the function is calling itself, and each function fall gets its own frame on the stack but usually with different variables (like n in this example).
 
 Q2. Subtract the innermost level number from the outermost to get the maximum count of stack frames that fit in the capacity of the call stack. How many stack frames fit in your system's call stack?
-A2. TODO
+A2. Subtracting the innermost level number from the outermost number, I get 16675 stack frames for my system's call stack.
 
 Q3. Describe how the symptoms of infinite recursion differ from the symptoms of an infinite loop.
-A3. TODO
+A3. An infinite loop makes the proram keep running forever because nothing ends the loop and it doesn't use any extra memory as it continuously repeats. Inifite recursion crashes instead because each call ends up adding an extra stack frame so the call runs out of the memory and the program has an error like "abrupt ending" or terminated.
 
 Q4. In place of selecting values over a defined range, an alternate approach would be to randomly select values for base and exponent. Such a test case would test something different each time you ran it. This test approach is part of a larger approach known as "fuzz" testing. What do you see as possible benefit and downside of randomness being used in a test case?
-A4. TODO
+A4. One benefit of randomness being used in a test is that it could reveal bugs in inputs that I wouldn't have thought of trying because it tests a wide range of different inputs. The downside is that failures can be hard to pinpoint and diagnose because the exact values that caused the error could be hard to track. Random tests also don't necessarily guarantee that edge cases get covered, so I believe a mix is needed of hand-picked tests and mass random tests.
 
 Q5. What was the number of iterations of `recPower` did it take on your system to amount to a quarter second? Copy/paste the time results of the two time trial sequences running on that number of iterations.
-A5. TODO
+A5. It took 20000000 iterations of 'recPower' for my system to amount to a quarter second. Below are my time trial sequence results.
+Time trial recPower, double base, keep exp constant
+
+manyPowerCalls(size, 5) (size =   4) completed in 0.279 secs
+manyPowerCalls(size, 5) (size =   8) completed in 0.282 secs
+manyPowerCalls(size, 5) (size =  16) completed in 0.278 secs
+manyPowerCalls(size, 5) (size =  32) completed in 0.277 secs
+manyPowerCalls(size, 5) (size =  64) completed in 0.299 secs
+manyPowerCalls(size, 5) (size = 128) completed in 0.280 secs
+
+Time trial recPower, keep base constant, double exp
+
+manyPowerCalls(5, size) (size =   4) completed in 0.272 secs
+manyPowerCalls(5, size) (size =   8) completed in 0.389 secs
+manyPowerCalls(5, size) (size =  16) completed in 0.539 secs
+manyPowerCalls(5, size) (size =  32) completed in 0.666 secs
+manyPowerCalls(5, size) (size =  64) completed in 0.805 secs
+manyPowerCalls(5, size) (size = 128) completed in 0.963 secs
 
 Q6. Explain how the recursive structure of `recPower` results in a Big-O runtime of `O(lgN)` relative to the size of its `exp` argument.
-A6. TODO
-
+A6. 'recPower' results in a big-O runtime of 'O(lgN)' because it makes a single recursive call with exp / 2, so the exponent is halved at every level and reaches teh base case after log_2 (exp) calls. Since each call does a constant amount of work, the total runtime is just O(logN).
 
 Balanced
 --------
 
 Q7. Compare your recursive solution to the iterative approach used for the Check Balance problem in [Section 1][section1]. Which version do you find easier to read and understand? In which version did you find it easier to confirm the correct behavior?
-A7. TODO
+A7. I find the recursive function easier to read because it follows a simple rule where an empty string is balanced, and we keep removing one matched pair and check what's left, which essentially condenses the problem into one action/idea. The iterative version on the other hand has to keep track of a stack, loop index, and a bunch of return cases, which is much more to track throughout the problem. I also found the cursive version to also be easier to confirm is correct because I could just trace it as a chain of the same action, while the iterative version just had more conditions to check.
+
 
 Merge
 -----
