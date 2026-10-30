@@ -1,8 +1,6 @@
 /*
- * File: MarbleBoard.cpp
- * ---------------------
- * TODO: Replace this comment with a description of your program, your name,
- * and your partner's name if you worked as a pair. Cite any sources of help.
+ * Rayed Chowdhury and Jun Jang
+ * CS106B, Assignment 4
  */
 #include "MarbleBoard.h"
 #include "set.h"
@@ -10,38 +8,56 @@
 using namespace std;
 
 /*
- * TODO: Replace this comment with a description of this function
- * and how you implemented it.
+ * Returns: all legal moves on this board, checking the four hop directions
+ * Preconditions: this board has a valid marble grid
  */
 Vector<Move> MarbleBoard::findPossibleMoves() const {
     Vector<Move> moves;
-    /* TODO: Fill in the remainder of this function. */
+    const Vector<GridLocation> directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    for (GridLocation start : _grid.locations()) {
+        if (_grid[start] == MARBLE_OCCUPIED) {
+            for (GridLocation direction : directions) {
+                GridLocation middle = {start.row + direction.row, start.col + direction.col};
+                GridLocation end = {middle.row + direction.row, middle.col + direction.col};
+                if (_grid.inBounds(middle) && _grid.inBounds(end)
+                    && _grid[middle] == MARBLE_OCCUPIED && _grid[end] == MARBLE_EMPTY) {
+                    moves.add({start, end});
+                }
+            }
+        }
+    }
     return moves;
 }
 
 /*
- * TODO: Replace this comment with a description of this function
- * and how you implemented it.
+ * Parameters: move is the jump to make
+ * Preconditions: move is legal on this board
+ * 
+ * moves the marble, removes the jumped marble, and updates the count
  */
 void MarbleBoard::makeMove(Move move) {
-    /* TODO: Fill in this function. */
+    GridLocation middle = {(move.start.row + move.end.row) / 2,
+                           (move.start.col + move.end.col) / 2};
+    _grid[move.start] = MARBLE_EMPTY;
+    _grid[middle] = MARBLE_EMPTY;
+    _grid[move.end] = MARBLE_OCCUPIED;
+    _numMarbles--;
 }
 
 /*
- * TODO: Replace this comment with a description of this function
- * and how you implemented it.
+ * Parameters: move is the jump to undo
+ * Preconditions: move was the most recent jump on this board
+ * 
+ * puts both marbles back and updates the count
  */
 void MarbleBoard::undoMove(Move move) {
-    /* TODO: Fill in this function. */
+    GridLocation middle = {(move.start.row + move.end.row) / 2,
+                           (move.start.col + move.end.col) / 2};
+    _grid[move.start] = MARBLE_OCCUPIED;
+    _grid[middle] = MARBLE_OCCUPIED;
+    _grid[move.end] = MARBLE_EMPTY;
+    _numMarbles++;
 }
-
-
-
-
-
-
-
-
 
 /* The functions below have already been written for you! */
 
@@ -176,4 +192,26 @@ PROVIDED_TEST("MarbleBoard::makeMove and undoMove: jump to the left, then undo")
     board.undoMove(move);
     EXPECT_EQUAL(board, original);
     EXPECT_EQUAL(board.numMarbles(), 2);
+}
+
+
+STUDENT_TEST("Every starting move can be made and undone") {
+    MarbleBoard board;
+    MarbleBoard original = board;
+    for (Move move : board.findPossibleMoves()) {
+        board.makeMove(move);
+        EXPECT_EQUAL(board.numMarbles(), 31);
+        board.undoMove(move);
+        EXPECT_EQUAL(board, original);
+        EXPECT_EQUAL(board.numMarbles(), 32);
+    }
+}
+
+STUDENT_TEST("Vertical pair has jumps up and down") {
+    MarbleBoard board(boardFromStrings({
+        "XX---XX", "XX---XX", "---O---", "---O---",
+        "-------", "XX---XX", "XX---XX"
+    }));
+    Set<Move> expected = {{{2, 3}, {4, 3}}, {{3, 3}, {1, 3}}};
+    EXPECT_EQUAL(toSet(board.findPossibleMoves()), expected);
 }

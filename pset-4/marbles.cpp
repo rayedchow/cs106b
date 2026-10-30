@@ -1,25 +1,50 @@
 /*
- * File: marbles.cpp
- * -----------------
- * TODO: Replace this comment with a description of your program, your name,
- * and your partner's name if you worked as a pair. Cite any sources of help.
+ * Rayed Chowdhury and Jun Jang
+ * CS106B, Assignment 4
  */
-#include <iostream>
 #include "backtracking.h"
 #include "hashset.h"
-#include "set.h"
 #include "SimpleTest.h"
 using namespace std;
 
 /*
- * TODO: Replace this comment with a description of this function
- * and how you implemented it.
+ * Parameters: board is the current board; moveHistory holds the chosen moves
+ *             visited stores board encodings already tried in this search
+ * Returns: true if a winning path exists, adding its moves to moveHistory
+ * Preconditions: moveHistory matches the path to board; visited belongs to this search
  */
-bool solvePuzzle(MarbleBoard& board, Vector<Move>& moveHistory) {
-    /* TODO: Fill in this function. */
+bool solvePuzzleHelper(MarbleBoard& board, Vector<Move>& moveHistory,
+                       HashSet<BoardEncoding>& visited) {
+    if (board.isSolved()) {
+        return true;
+    }
+    BoardEncoding encoding = board.encode();
+    if (visited.contains(encoding)) {
+        return false;
+    }
+    visited.add(encoding);
+    for (Move move : board.findPossibleMoves()) {
+        board.makeMove(move);
+        moveHistory.add(move);
+        bool solved = solvePuzzleHelper(board, moveHistory, visited);
+        board.undoMove(move);
+        if (solved) {
+            return true;
+        }
+        moveHistory.remove(moveHistory.size() - 1);
+    }
     return false;
 }
 
+/*
+ * Parameters: board is the puzzle to solve; moveHistory receives the winning moves
+ * Returns: true if the puzzle can be solved, keeping board unchanged
+ * Preconditions: moveHistory is empty
+ */
+bool solvePuzzle(MarbleBoard& board, Vector<Move>& moveHistory) {
+    HashSet<BoardEncoding> visited;
+    return solvePuzzleHelper(board, moveHistory, visited);
+}
 
 /* * * * * * Test Cases * * * * * */
 
@@ -82,4 +107,25 @@ PROVIDED_TEST("solvePuzzle: unsolvable 15-marble board (needs the explored-board
     bool solved = true;
     TIME_OPERATION(15, solved = solvePuzzle(board, moves));
     EXPECT(!solved);
+}
+
+
+STUDENT_TEST("A lone marble away from the center is also solved") {
+    MarbleBoard board(loadBoard("marbles/boards/off-center.txt"));
+    Vector<Move> moves;
+    EXPECT(solvePuzzle(board, moves));
+    EXPECT(moves.isEmpty());
+}
+
+STUDENT_TEST("Solver restores the board after success and can solve it again") {
+    MarbleBoard board(loadBoard("marbles/boards/three-step.txt"));
+    MarbleBoard original = board;
+    for (int i = 0; i < 2; i++) {
+        Vector<Move> moves;
+        EXPECT(solvePuzzle(board, moves));
+        EXPECT_EQUAL(checkSolution(original.toGrid(), moves), "");
+        EXPECT_EQUAL(moves.size(), original.numMarbles() - 1);
+        EXPECT_EQUAL(board, original);
+        EXPECT_EQUAL(board.numMarbles(), original.numMarbles());
+    }
 }

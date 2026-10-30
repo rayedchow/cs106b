@@ -1,5 +1,5 @@
-Before submitting this file, make sure that there are no more TODO
-placeholders remaining in the file (and remove this comment too).
+Rayed Chowdhury and Jun Jang
+CS106B, Assignment 4
 
 Warmup
 ------
@@ -28,10 +28,18 @@ A5. TODO
 Marbles
 -------
 Q6. How much time does our visited boards tracking save us? Run the solver on the "half-done" board in the res folder and note at the bottom of the screen how many boards it said it tried. Now comment-out your code that skips already-visited boards and run the experiment again. Give the two counts and explain the results. Would you expect the percentage gap between the two counts to be same/greater/less if you re-run this experiment starting with the whole board? (try it if you dare!)
-A6. TODO
+A6. With visited-board checking, the half-done board took 1,215 board visits.
+Without it, it took 21,379. These counts use calls to encode(), just like the
+GUI counter. That's about 94% fewer visits because we skip boards we've already
+tried instead of exploring their moves again. I'd expect a bigger percentage
+gap on the full board, since more move sequences can lead to the same board.
+The exact gap still depends on the order we try the moves.
 
 Q7. What edit would you need to make to change the code to apply the traditional rule that the game is only won if the last remaining marble lands in the center spot? (our version lets it land anywhere) Describe exactly where the change would be made, and what it would be.
-A7. TODO
+A7. In MarbleBoard.cpp, change MarbleBoard::isSolved() to return:
+return _numMarbles == 1 && _grid[BOARD_CENTER] == MARBLE_OCCUPIED;
+The solver already calls isSolved(), so this makes it stop only when the last
+marble is in the center.
 
 Redistrict
 ----------
@@ -43,4 +51,14 @@ What questions might you ask about this job before making a decision? What might
 Which communities would be affected by the work you're doing?
 
 Please write your list of 3-5 questions and be sure to include ethical considerations.
-A8. TODO
+A8.
+1. What does the software optimize for, and how do you check whether a map is fair?
+2. Could these maps weaken the voting power of communities of color, low-income
+   neighborhoods, or voters who support the other party?
+3. Can the public and independent reviewers inspect the data, code, and maps?
+4. Could I refuse changes that harm voters, and who takes responsibility for
+   those decisions?
+
+My main concern is helping one party gain power by splitting communities or
+making their votes matter less. That could hurt their representation and
+people's trust in elections, and I'd be responsible for helping build it.
