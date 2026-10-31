@@ -4,26 +4,26 @@ CS106B, Assignment 4
 Warmup
 ------
 Q1. What is the value of `totalMoves` after stepping over the call to `moveTower` in `hanoiAnimation`?
-A1. TODO
+A1. The value of 'totalMoves' after stepping over the call to 'moveTower' was 15.
 
 Q2. What is the value of the `totalMoves` variable after stepping over the first recursive sub-call?
 (In other words, within `moveTower` and just after stepping over the first recursive sub-call
 to `moveTower` inside the `else` statement.)
-A2. TODO
+A2. The value of 'totalMoves' after stepping over the first recursive sub-call was 7.
 
 Q3. After breaking at the base case of `moveTower` and then choosing Step Out, where do you end up?
 (What function are you in, and at what line number?)
 What is the value of the `totalMoves` variable at this point?
-A3. TODO
+A3. I'm in moveTower at line 79, which is the first recursive call in the else branch. 'totalMoves' is 1.
 
 Q4. What is the smallest possible input that you used to trigger the bug in the program?
-A4. TODO
+A4. The smallest possible input that I used to trigger the bug is just a single element vector like {1}. The empty vector {} and the vector {0} still give correct answers as the value of 'sumSoFar' doesn't differ between the different branches, but {1} returns 0 from buggyCount when the correct answer is 1.
 
 Q5. Identify the one-character error in the code and explain why that bug causes the function
 to return the output you see when running on the minimal input you listed above.
 You should be able to specifically account for how the error causes the result to
 change from “completely correct” to “terribly wrong.”
-A5. TODO
+A5. The one characer error in the coe is in the include call where buggyCount(v, index + 1, sumSoFar += v[index]) uses += where the correct version actually uses +. The + only computes sumSoFar + v[index] to pass into that one recursive call, but += also changes the variable sumSoFar in the current frame. The exclude call in the next line then passes this already-changed value, so the "exclude" branch isn't actually excluding the elment anymore. For the minimal input {1}, the correct version makes two calls where one is sumSoFar = 1 and one with sumSoFar = 0. The exclude branch reaches the empty subset so it returns 1, which means the total is 1. But for the buggy version, += has changed sumSoFar to 1 before the exclude call, so both cases arrive at the base case with sumSoFar = 1. Neither sums to zero so they return 0 and the total is 0 instead of 1.
 
 Marbles
 -------
