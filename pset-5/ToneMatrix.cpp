@@ -1,3 +1,7 @@
+/*
+ * Rayed Chowdhury and Jun Jang
+ * CS106B, Assignment 5
+ */
 #include "ToneMatrix.h"
 #include "Demos/DrawRectangle.h"
 #include <cmath>
@@ -48,50 +52,121 @@ double frequencyForRow(int rowIndex) {
     return kBaseFrequency * pow(2.0, halfSteps / 12.0);
 }
 
+const int SAMPLES_PER_COLUMN = 8192;
+
+/*
+ * Parameters: gridSize is the side length; lightSize is each light's width in pixels
+ * Preconditions: gridSize > 0, lightSize > 0, and sample rate supports the row frequencies
+ * creates unlit lights and one correctly tuned instrument per row
+ */
 ToneMatrix::ToneMatrix(int gridSize, int lightSize) {
-    /* TODO: Delete this comment and the lines below it, then
-     * implement this function.
-     */
-    (void) gridSize;
-    (void) lightSize;
+    _gridSize = gridSize;
+    _lightSize = lightSize;
+    _grid = new bool[_gridSize * _gridSize]{};
+    _instruments = new StringInstrument[_gridSize];
+    for (int row = 0; row < _gridSize; row++) {
+        _instruments[row] = StringInstrument(frequencyForRow(row));
+    }
 }
 
+/*
+ * Parameters: none
+ * frees the lights and instruments
+ */
 ToneMatrix::~ToneMatrix() {
-    /* TODO: Delete this comment and implement this function. */
+    delete[] _grid;
+    delete[] _instruments;
 }
 
+/*
+ * Parameters: mouseX and mouseY are pixel coordinates within the matrix
+ * Preconditions: the mouse is over a light
+ * toggles the clicked light and remembers its new state for dragging
+ */
 void ToneMatrix::mousePressed(int mouseX, int mouseY) {
-    /* TODO: Delete this comment and the lines below it, then
-     * implement this function.
-     */
-    (void) mouseX;
-    (void) mouseY;
+    int index = (mouseY / _lightSize) * _gridSize + mouseX / _lightSize;
+    _grid[index] = !_grid[index];
+    _dragState = _grid[index];
 }
 
+/*
+ * Parameters: mouseX and mouseY are pixel coordinates within the matrix
+ * Preconditions: the mouse is over a light and mousePressed was called first
+ * sets the hovered light to the state chosen by the last mouse press
+ */
 void ToneMatrix::mouseDragged(int mouseX, int mouseY) {
-    /* TODO: Delete this comment and the lines below it, then
-     * implement this function.
-     */
-    (void) mouseX;
-    (void) mouseY;
+    int index = (mouseY / _lightSize) * _gridSize + mouseX / _lightSize;
+    _grid[index] = _dragState;
 }
 
+/*
+ * Parameters: none
+ * draws every light using its current state and pixel size
+ */
 void ToneMatrix::draw() const {
-    /* TODO: Delete this comment and implement this function. */
+    for (int row = 0; row < _gridSize; row++) {
+        for (int col = 0; col < _gridSize; col++) {
+            Rectangle bounds = {col * _lightSize, row * _lightSize, _lightSize, _lightSize};
+            Color color = kLightOffColor;
+            if (_grid[row * _gridSize + col]) {
+                color = kLightOnColor;
+            }
+            drawRectangle(bounds, color);
+        }
+    }
 }
 
+/*
+ * Parameters: none
+ * Returns: sum of all instrument samples, plucking a new column every 8192 samples
+ */
 Sample ToneMatrix::nextSample() {
-    /* TODO: Delete this comment and the lines below it, then
-     * implement this function.
-     */
-    return 0;
+    if (_samplesUntilPluck == 0) {
+        for (int row = 0; row < _gridSize; row++) {
+            if (_grid[row * _gridSize + _nextColumn]) {
+                _instruments[row].pluck();
+            }
+        }
+        _nextColumn = (_nextColumn + 1) % _gridSize;
+        _samplesUntilPluck = SAMPLES_PER_COLUMN;
+    }
+    Sample result = 0;
+    for (int row = 0; row < _gridSize; row++) {
+        result += _instruments[row].nextSample();
+    }
+    _samplesUntilPluck--;
+    return result;
 }
 
+/*
+ * Parameters: newGridSize is the new side length
+ * Preconditions: sample rate supports the new row frequencies
+ * Errors: newGridSize <= 0
+ * resizes lights and instruments, keeps shared rows/cells, and resets playback
+ */
 void ToneMatrix::resize(int newGridSize) {
-    /* TODO: Delete this comment and the lines below it, then
-     * implement this function.
-     */
-    (void) newGridSize;
+    if (newGridSize <= 0) {
+        error("Grid size must be positive.");
+    }
+    StringInstrument* instruments = new StringInstrument[newGridSize];
+    bool* grid = new bool[newGridSize * newGridSize]{};
+    for (int row = 0; row < newGridSize; row++) {
+        if (row < _gridSize) {
+            instruments[row] = _instruments[row];
+            for (int col = 0; col < newGridSize && col < _gridSize; col++) {
+                grid[row * newGridSize + col] = _grid[row * _gridSize + col];
+            }
+        } else {
+            instruments[row] = StringInstrument(frequencyForRow(row));
+        }
+    }
+    delete[] _grid;
+    delete[] _instruments;
+    _grid = grid;
+    _instruments = instruments;
+    _gridSize = newGridSize;
+    _nextColumn = 0;
+    _samplesUntilPluck = 0;
 }
 
 /* * * * * Test Cases Below This Point * * * * */
@@ -1203,4 +1278,74 @@ PROVIDED_TEST("Milestone 5: resize() resets the left-to-right sweep.") {
     /* The next one, though, should trigger something. */
     double result = matrix.nextSample();
     EXPECT_GREATER_THAN(result, 0);
+}
+
+
+STUDENT_TEST("Mouse presses remember the most recent on or off state") {
+    AudioSystem::setSampleRate(44100);
+    ToneMatrix matrix(3, 10);
+    matrix.mousePressed(25, 15);
+    EXPECT(matrix._grid[5]);
+    EXPECT(matrix._dragState);
+    matrix.mousePressed(25, 15);
+    EXPECT(!matrix._grid[5]);
+    EXPECT(!matrix._dragState);
+    matrix.mousePressed(5, 25);
+    EXPECT(matrix._dragState);
+    EXPECT(matrix._grid[6]);
+}
+
+STUDENT_TEST("Dragging paints or erases without toggling revisited lights") {
+    AudioSystem::setSampleRate(44100);
+    ToneMatrix matrix(3, 10);
+    matrix.mousePressed(5, 5);
+    matrix.mouseDragged(15, 25);
+    matrix.mouseDragged(15, 25);
+    EXPECT(matrix._grid[7]);
+    matrix.mousePressed(5, 5);
+    matrix.mouseDragged(15, 25);
+    matrix.mouseDragged(15, 25);
+    EXPECT(!matrix._grid[7]);
+}
+
+STUDENT_TEST("New matrices start playback at column zero without a delay") {
+    AudioSystem::setSampleRate(44100);
+    ToneMatrix matrix(3, 10);
+    EXPECT_EQUAL(matrix._nextColumn, 0);
+    EXPECT_EQUAL(matrix._samplesUntilPluck, 0);
+}
+
+STUDENT_TEST("Playback waits 8192 samples between columns and wraps") {
+    AudioSystem::setSampleRate(44100);
+    ToneMatrix matrix(2, 10);
+    for (int column = 0; column < 4; column++) {
+        EXPECT_EQUAL(matrix._nextColumn, column % 2);
+        EXPECT_EQUAL(matrix._samplesUntilPluck, 0);
+        matrix.nextSample();
+        EXPECT_EQUAL(matrix._nextColumn, (column + 1) % 2);
+        EXPECT_EQUAL(matrix._samplesUntilPluck, 8191);
+        for (int i = 0; i < 8191; i++) {
+            matrix.nextSample();
+        }
+        EXPECT_EQUAL(matrix._samplesUntilPluck, 0);
+    }
+}
+
+STUDENT_TEST("Same-size resize preserves vibrating strings and resets playback") {
+    AudioSystem::setSampleRate(44100);
+    ToneMatrix matrix(2, 10);
+    matrix.mousePressed(15, 15);
+    matrix._instruments[1].pluck();
+    for (int i = 0; i < 7; i++) {
+        matrix.nextSample();
+    }
+    Sample next = matrix._instruments[1]._waveform[matrix._instruments[1]._cursor];
+    int cursor = matrix._instruments[1]._cursor;
+    matrix.resize(2);
+    EXPECT(matrix._grid[3]);
+    EXPECT_EQUAL(matrix._instruments[1]._cursor, cursor);
+    EXPECT_EQUAL(matrix._instruments[1]._waveform[cursor], next);
+    EXPECT_EQUAL(matrix._nextColumn, 0);
+    EXPECT_EQUAL(matrix._samplesUntilPluck, 0);
+    EXPECT_EQUAL(matrix._lightSize, 10);
 }

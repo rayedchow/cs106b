@@ -1,3 +1,7 @@
+/*
+ * Rayed Chowdhury and Jun Jang
+ * CS106B, Assignment 5
+ */
 #pragma once
 
 #include "Demos/Sample.h"
@@ -52,9 +56,9 @@ private:
     bool* _grid = nullptr;
     StringInstrument* _instruments = nullptr;
 
-    /* Friendly reminder to follow the convention of adding an underscore
-     * in front of any private member variables you declare!
-     */
+    bool _dragState = false;
+    int _nextColumn = 0;
+    int _samplesUntilPluck = 0;
 
     /* Allow SimpleTest test cases to read private fields. */
     ALLOW_TEST_ACCESS();

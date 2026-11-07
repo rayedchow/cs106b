@@ -1,9 +1,15 @@
-Q1: The value of _id of allBalls[0] stays the same the entire time (0). The value of _x increases by 2 every iteration and the value of _y increases by 4 every iteration.
+Q1: The _id of allBalls[0] stays 0. Each move adds _vx to _x and _vy to _y.
+In the run I observed, _x increased by 2 and _y increased by 4 until a bounce.
+At a boundary, the matching velocity flips sign. The exact speeds depend on
+the random starting values.
 
 
 
 
-Q2: Every iteration, the _x member variable changes by +4/-4. On the other hand, the _y variable decreases by 5 each time. This differs as this stuck ball essentially is stuck in the same position in the x axis, while moving down in the y direction, which gives the appearance of being stuck.
+Q2: The stuck ball's _id stays the same. In the run I observed, _x alternated
+between two positions as _vx flipped between +4 and -4 on each move. Meanwhile,
+_y decreased by 5 per move, so the ball moved up the screen until another bounce.
+Instead of traveling across the window, it wiggled along the right edge.
 
 
 
@@ -13,7 +19,8 @@ Q3: The ball ends up moving normally after I changed the position to (0,0), whic
 
 
 
-Q4: Accessing an index outside of the allocated array bounds had no effect on my system as the test still passed and nothing crashed since there was nothing to check bounds. Deleting the same memory twice crashed the program with an abort error, which the library said it was raised because the system detected corrupt state. Accessing memory after it was deleted didn't crash but it gave the wrong answer to the test as taskList[0].label was "" instead of "sleep."
+Q4: Accessing an index outside of the allocated array bounds had no effect on my system as the test still passed and nothing crashed even though the access was out of bounds. Deleting the same memory twice crashed the program with an abort error, which the library said it was raised because the system detected corrupt state. Accessing memory after it was deleted didn't crash but it gave the wrong answer to the test as taskList[0].label was "" instead of "sleep." These were the outcomes I observed;
+all three operations have undefined behavior, so another run could act differently.
 
 
 
