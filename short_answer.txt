@@ -1,0 +1,35 @@
+Q1: The value of _id of allBalls[0] stays the same the entire time (0). The value of _x increases by 2 every iteration and the value of _y increases by 4 every iteration.
+
+
+
+
+Q2: Every iteration, the _x member variable changes by +4/-4. On the other hand, the _y variable decreases by 5 each time. This differs as this stuck ball essentially is stuck in the same position in the x axis, while moving down in the y direction, which gives the appearance of being stuck.
+
+
+
+
+Q3: The ball ends up moving normally after I changed the position to (0,0), which implies that the problem was the ball's starting position and not its velocity. The ball already started past the edge of the bounding box. On every move, move() sees the ball is out of bounds and flips its velocity, but because one step isn't enough to bring it back inside, it's still out of bounds on the next move and flips again, which is why it gets stuck flipping back and forth. To fix this, balls should start fully inside the bounding box.
+
+
+
+
+Q4: Accessing an index outside of the allocated array bounds had no effect on my system as the test still passed and nothing crashed since there was nothing to check bounds. Deleting the same memory twice crashed the program with an abort error, which the library said it was raised because the system detected corrupt state. Accessing memory after it was deleted didn't crash but it gave the wrong answer to the test as taskList[0].label was "" instead of "sleep."
+
+
+
+
+Q5: The array has size 8,000 / 1000 = 8. When the string is first created, all 8 values are 0. However, when it's first plucked, the first four values are 0.05 and the last four values are -0.05.
+
+
+
+
+Q6: After four calls, the array is {0.04975, 0.04975, 0.04975, 0, -0.05, -0.05, -0.05, -0.05} and the cursor is at 4.
+
+
+
+
+Q7: Updating the waveform buffer with values of +0.25 and -0.25 instead of 0.05 and -0.05 would only change the amplitude. The frequency is determined by the length of the array (which wasn't changed) and the shape is still the same square pattern where first half is high and second half is low. I'd expect to hear the same sound except just louder.
+
+
+
+
