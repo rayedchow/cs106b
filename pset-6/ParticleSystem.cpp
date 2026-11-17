@@ -1,49 +1,252 @@
+/*
+ * Rayed Chowdhury and Jun Jang
+ * CS106B, Assignment 6
+ */
 #include "ParticleSystem.h"
 #include "DrawParticle.h"
+#include "random.h"
 using namespace std;
 
+const int EXPLOSION_SIZE = 50;
+
+/*
+ * Parameters: none
+ * creates an empty particle list
+ */
 ParticleSystem::ParticleSystem() {
-    /* TODO: Delete this comment and implement this function. */
+    _head = nullptr;
+    _tail = nullptr;
+    _count = 0;
 }
 
+/*
+ * Parameters: none
+ * frees every particle cell
+ */
 ParticleSystem::~ParticleSystem() {
-    /* TODO: Delete this comment and implement this function. */
+    while (_head != nullptr) {
+        ParticleCell* next = _head->next;
+        delete _head;
+        _head = next;
+    }
 }
 
+/*
+ * Parameters: none
+ * Returns: number of particles in O(1) time
+ */
 int ParticleSystem::numParticles() const {
-    /* TODO: Delete this comment and the lines below, then
-     * implement this function.
-     */
-    return -1;
+    return _count;
 }
 
+/*
+ * Parameters: particle is the particle to check
+ * Returns: true if the particle is on screen and its lifetime is nonnegative
+ */
+bool ParticleSystem::isValid(const Particle& particle) const {
+    return particle.x >= 0 && particle.x < SCENE_WIDTH
+           && particle.y >= 0 && particle.y < SCENE_HEIGHT && particle.lifetime >= 0;
+}
+
+/*
+ * Parameters: data is the particle to copy into the system
+ * adds a valid particle at the tail in O(1) time; ignores invalid particles
+ */
 void ParticleSystem::add(const Particle& data) {
-    /* TODO: Delete this comment and the lines below, then
-     * implement this function.
-     */
-    (void) data;
+    if (!isValid(data)) {
+        return;
+    }
+    ParticleCell* cell = new ParticleCell{data, nullptr, _tail};
+    if (_tail != nullptr) {
+        _tail->next = cell;
+    } else {
+        _head = cell;
+    }
+    _tail = cell;
+    _count++;
 }
 
+/*
+ * Parameters: none
+ * draws particles from the front of the list to the back
+ */
 void ParticleSystem::drawParticles() const {
-    /* TODO: Delete this comment and implement this function. */
+    for (ParticleCell* cell = _head; cell != nullptr; cell = cell->next) {
+        drawParticle(cell->particle.x, cell->particle.y, cell->particle.color);
+    }
 }
 
+/*
+ * Parameters: cell is the cell to remove
+ * Preconditions: cell belongs to this list
+ * unlinks and deletes cell, updating the head, tail, and count
+ */
+void ParticleSystem::removeCell(ParticleCell* cell) {
+    if (cell->prev != nullptr) {
+        cell->prev->next = cell->next;
+    } else {
+        _head = cell->next;
+    }
+    if (cell->next != nullptr) {
+        cell->next->prev = cell->prev;
+    } else {
+        _tail = cell->prev;
+    }
+    delete cell;
+    _count--;
+}
+
+/*
+ * Parameters: particle is the expired firework
+ * appends 50 streamers at its final position, using one random color for all
+ */
+void ParticleSystem::explode(const Particle& particle) {
+    Color color = Color::RANDOM();
+    for (int i = 0; i < EXPLOSION_SIZE; i++) {
+        Particle streamer;
+        streamer.x = particle.x;
+        streamer.y = particle.y;
+        streamer.color = color;
+        streamer.dx = randomReal(-3, 3);
+        streamer.dy = randomReal(-3, 3);
+        streamer.lifetime = randomInteger(2, 10);
+        add(streamer);
+    }
+}
+
+/*
+ * Parameters: none
+ * moves particles once, applies gravity, and removes expired or offscreen particles
+ * appends firework streamers and moves them during this same call
+ */
 void ParticleSystem::moveParticles() {
-    /* TODO: Delete this comment and implement this function. */
+    ParticleCell* cell = _head;
+    while (cell != nullptr) {
+        Particle& particle = cell->particle;
+        particle.x += particle.dx;
+        particle.y += particle.dy;
+        particle.lifetime--;
+        if (particle.type != ParticleType::STREAMER) {
+            particle.dy++;
+        }
+        if (particle.type == ParticleType::FIREWORK && particle.lifetime < 0) {
+            explode(particle);
+        }
+        // Read next after appending, so a firework at the tail still visits its streamers.
+        ParticleCell* next = cell->next;
+        if (!isValid(particle)) {
+            removeCell(cell);
+        }
+        cell = next;
+    }
 }
 
 /* * * * * Test Cases Below This Point * * * * */
 
-/* TODO: Some milestones of this assignment will require you to add your own
- * test cases. Delete this comment and put those tests here.
- */
+STUDENT_TEST("Head, tail, and count stay correct when particles are removed") {
+    ParticleSystem system;
+    EXPECT_EQUAL(system._tail, nullptr);
+    EXPECT_EQUAL(system._count, 0);
+    Particle particle;
+    particle.x = particle.y = 100;
+    particle.lifetime = 0;
+    system.add(particle);
+    EXPECT_EQUAL(system._head, system._tail);
+    EXPECT_EQUAL(system._count, 1);
+    system.moveParticles();
+    EXPECT_EQUAL(system._head, nullptr);
+    EXPECT_EQUAL(system._tail, nullptr);
+    EXPECT_EQUAL(system._count, 0);
+    particle.lifetime = 3;
+    system.add(particle);
+    system.add(particle);
+    EXPECT_EQUAL(system._head->next, system._tail);
+    EXPECT_EQUAL(system._tail->prev, system._head);
+    EXPECT_EQUAL(system._count, 2);
+}
 
+STUDENT_TEST("Removing the middle and tail leaves both directions linked correctly") {
+    ParticleSystem system;
+    Particle particle;
+    particle.x = particle.y = 100;
+    particle.lifetime = 10;
+    system.add(particle);
+    particle.lifetime = 0;
+    system.add(particle);
+    particle.lifetime = 10;
+    system.add(particle);
+    particle.lifetime = 0;
+    system.add(particle);
+    system.moveParticles();
+    EXPECT_EQUAL(system._count, 2);
+    EXPECT_EQUAL(system._head->next, system._tail);
+    EXPECT_EQUAL(system._tail->prev, system._head);
+    EXPECT_EQUAL(system._head->prev, nullptr);
+    EXPECT_EQUAL(system._tail->next, nullptr);
+}
 
+STUDENT_TEST("Explosions use one color and update newborn streamers in the same tick") {
+    setRandomSeed(106);
+    ParticleSystem system;
+    Particle firework;
+    firework.type = ParticleType::FIREWORK;
+    firework.x = 400;
+    firework.y = 300;
+    firework.dx = 1;
+    firework.dy = 2;
+    firework.lifetime = 0;
+    system.add(firework);
+    system.moveParticles();
+    EXPECT_EQUAL(system.numParticles(), 50);
+    Color color = system._head->particle.color;
+    int count = 0;
+    for (auto* cell = system._head; cell != nullptr; cell = cell->next) {
+        const Particle& streamer = cell->particle;
+        EXPECT_EQUAL(streamer.type, ParticleType::STREAMER);
+        EXPECT_EQUAL(streamer.color, color);
+        EXPECT(streamer.dx >= -3 && streamer.dx <= 3);
+        EXPECT(streamer.dy >= -3 && streamer.dy <= 3);
+        EXPECT(streamer.lifetime >= 1 && streamer.lifetime <= 9);
+        EXPECT_EQUAL(streamer.x, 401 + streamer.dx);
+        EXPECT_EQUAL(streamer.y, 302 + streamer.dy);
+        if (cell->next != nullptr) {
+            EXPECT_EQUAL(cell->next->prev, cell);
+        }
+        count++;
+    }
+    EXPECT_EQUAL(count, 50);
+    EXPECT_EQUAL(system._tail->next, nullptr);
+}
 
+STUDENT_TEST("An offscreen firework with time left does not explode") {
+    ParticleSystem system;
+    Particle firework;
+    firework.type = ParticleType::FIREWORK;
+    firework.x = SCENE_WIDTH - 1;
+    firework.dx = 2;
+    firework.lifetime = 10;
+    system.add(firework);
+    system.moveParticles();
+    EXPECT_EQUAL(system.numParticles(), 0);
+    EXPECT_EQUAL(system._tail, nullptr);
+}
 
-
-
-
+STUDENT_TEST("Multiple fireworks update all newborn particles exactly once") {
+    ParticleSystem system;
+    Particle firework;
+    firework.type = ParticleType::FIREWORK;
+    firework.x = 400;
+    firework.y = 300;
+    firework.lifetime = 0;
+    system.add(firework);
+    system.add(firework);
+    system.moveParticles();
+    EXPECT_EQUAL(system.numParticles(), 100);
+    for (auto* cell = system._head; cell != nullptr; cell = cell->next) {
+        EXPECT_EQUAL(cell->particle.x, 400 + cell->particle.dx);
+        EXPECT_EQUAL(cell->particle.y, 300 + cell->particle.dy);
+    }
+}
 
 /* * * * * Provided Tests Below This Point * * * * */
 

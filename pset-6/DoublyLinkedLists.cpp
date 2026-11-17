@@ -1,3 +1,7 @@
+/*
+ * Rayed Chowdhury and Jun Jang
+ * CS106B, Assignment 6
+ */
 #include "GUI/MemoryDiagnostics.h"
 #include <string>
 using namespace std;
@@ -11,34 +15,43 @@ struct Cell {
     TRACK_ALLOCATIONS_OF(Cell); // Helps SimpleTest find memory leaks
 };
 
-/* Computes the length of a doubly-linked list of cells. This function must
- * be implemented iteratively, rather than recursively.
+/*
+ * Parameters: list points to the first cell, or is null
+ * Returns: number of cells in the list
+ * Preconditions: list has no cycles
  */
 int lengthOf(Cell* list) {
-    /* TODO: Delete this comment and the next two lines, then implement this
-     * function.
-     */
-    (void) list;
-    return -1;
+    int length = 0;
+    for (Cell* current = list; current != nullptr; current = current->next) {
+        length++;
+    }
+    return length;
 }
 
-/* Frees all memory used by the given doubly-linked list. This function must
- * be implemented iteratively, rather than recursively.
+/*
+ * Parameters: list points to the first cell, or is null
+ * Preconditions: list has no cycles and its cells were allocated with new
+ * frees every cell in the list
  */
 void freeDoublyLinkedList(Cell* list) {
-    /* TODO: Delete this comment and the next line, then implement this
-     * function.
-     */
-    (void) list;
+    while (list != nullptr) {
+        Cell* next = list->next;
+        delete list;
+        list = next;
+    }
 }
 
-/* Adds the given value to the front of the specified doubly-linked list. */
+/*
+ * Parameters: list is the head pointer to update; value is the new cell's value
+ * Preconditions: list points to the first cell, or is null
+ * adds a cell at the front and updates both links
+ */
 void prependTo(Cell*& list, const string& value) {
-    /* TODO: Delete this comment and the next two lines, then implement this
-     * function.
-     */
-    (void) list;
-    (void) value;
+    Cell* cell = new Cell{value, list, nullptr};
+    if (list != nullptr) {
+        list->prev = cell;
+    }
+    list = cell;
 }
 
 /* * * * * Test Cases Below This Point * * * * */

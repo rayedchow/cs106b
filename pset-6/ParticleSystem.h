@@ -1,3 +1,7 @@
+/*
+ * Rayed Chowdhury and Jun Jang
+ * CS106B, Assignment 6
+ */
 #pragma once
 
 #include "Particle.h"
@@ -56,9 +60,12 @@ private:
      */
     ParticleCell* _head;
 
-    /* TODO: Add any new member variables or helper functions here. Make sure
-     * to delete this comment before submitting.
-     */
+    ParticleCell* _tail;
+    int _count;
+
+    bool isValid(const Particle& particle) const;
+    void removeCell(ParticleCell* cell);
+    void explode(const Particle& particle);
 
 
 
